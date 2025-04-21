@@ -172,3 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# others
+.cursor
+/.functions.py.swp
+.DS_store
