@@ -80,32 +80,43 @@ This end-to-end use case shows how to automate the entire workflow from ingestio
 ## 📂 Example Workflow File (`etl.yml`)
 
 ```yaml
-name: Run YouTube ETL
+name: data-pipeline-workflow
 
 on:
+  # push: # uncomment to run on push
   schedule:
-    - cron: '0 0 * * *' # every day at midnight UTC
-  push:
-    branches:
-      - main
-
+  - cron: "35 0 * * *" # run every day at 12:35AM
+  workflow_dispatch: # manual triggers
 jobs:
-  run-etl:
-    runs-on: ubuntu-latest
+  run-data-pipeline:
+    runs-on: ubuntu-latest # what system they would run on
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run ETL Script
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python etl/youtube_etl.py
+    # Steps to run the workflow
+    - name: Checkout repo content
+      uses: actions/checkout@v4 # Pulling all code from github repo
+      with:
+        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Use the PAT instead of the default GITHUB_TOKEN
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run data pipeline
+      env:
+        YT_API_KEY: ${{ secrets.YT_API_KEY }} # import API key
+      run: python data_pipeline.py # run data pipeline
+    - name: Check for changes # create env variable indicating if any changes were made
+      id: git-check
+      run: |
+        git config user.name 'github-actions'
+        git config user.email 'github-actions@github.com'
+        git add .
+        git diff --staged --quiet || echo "changes=true" >> $GITHUB_ENV 
+    - name: Commit and push if changes
+      if: env.changes == 'true' # if changes made push new data to repo
+      run: |
+        git commit -m "updated video index"
+        git push
+```
