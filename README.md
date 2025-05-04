@@ -1,4 +1,4 @@
-# 🚀 data_pipeline_CICD
+# 🚀 Data Pipeline CI/CD with Github Actions
 
 This project demonstrates how to build and automate a CI/CD pipeline for data workflows using **GitHub Actions**. With the increasing complexity of data pipelines, automation ensures reliability, reproducibility, and scalability across development, staging, and production environments.
 
@@ -85,7 +85,7 @@ name: data-pipeline-workflow
 on:
   # push: # uncomment to run on push
   schedule:
-  - cron: "35 0 * * *" # run every day at 12:35AM
+  - cron: "0 0 * * 1" # run every Monday at 12:00 AM (midnight).
   workflow_dispatch: # manual triggers
 jobs:
   run-data-pipeline:
